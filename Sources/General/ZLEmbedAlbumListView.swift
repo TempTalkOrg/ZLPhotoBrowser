@@ -30,7 +30,7 @@ import Photos
 class ZLEmbedAlbumListView: UIView {
     static let rowH: CGFloat = 60
     
-    private var selectedAlbum: ZLAlbumListModel?
+    private var selectedAlbum: ZLAlbumListModel
     
     private lazy var tableBgView = UIView()
     
@@ -55,7 +55,7 @@ class ZLEmbedAlbumListView: UIView {
     
     private var orientation: UIInterfaceOrientation = UIApplication.shared.statusBarOrientation
     
-    init(selectedAlbum: ZLAlbumListModel?) {
+    init(selectedAlbum: ZLAlbumListModel) {
         self.selectedAlbum = selectedAlbum
         super.init(frame: .zero)
         setupUI()
@@ -107,11 +107,7 @@ class ZLEmbedAlbumListView: UIView {
     
     private func loadAlbumList(completion: (() -> Void)? = nil) {
         DispatchQueue.global().async {
-            ZLPhotoManager.getPhotoAlbumList(
-                ascending: ZLPhotoUIConfiguration.default().sortAscending,
-                allowSelectImage: ZLPhotoConfiguration.default().allowSelectImage,
-                allowSelectVideo: ZLPhotoConfiguration.default().allowSelectVideo
-            ) { [weak self] albumList in
+            ZLPhotoManager.getPhotoAlbumList(ascending: ZLPhotoConfiguration.default().sortAscending, allowSelectImage: ZLPhotoConfiguration.default().allowSelectImage, allowSelectVideo: ZLPhotoConfiguration.default().allowSelectVideo) { [weak self] albumList in
                 self?.arrDataSource.removeAll()
                 self?.arrDataSource.append(contentsOf: albumList)
                 
@@ -148,7 +144,7 @@ class ZLEmbedAlbumListView: UIView {
             return
         }
         
-        if #available(iOS 14.0, *), PHPhotoLibrary.zl.authStatus(for: .readWrite) == .limited {
+        if #available(iOS 14.0, *), PHPhotoLibrary.authorizationStatus(for: .readWrite) == .limited {
             loadAlbumList { [weak self] in
                 self?.animateShow()
             }

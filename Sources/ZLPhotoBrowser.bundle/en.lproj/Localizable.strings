@@ -4,12 +4,9 @@
 "cancel" = "Cancel";
 
 "originalPhoto" = "Full Image";
-"originalTotalSize" = "Total";
 "done" = "Done";
 "ok" = "OK";
 "editFinish" = "Done";
-"cameraDone" = "Done";
-"inputDone" = "Done";
 
 "back" = "Back";
 "edit" = "Edit";
@@ -23,25 +20,17 @@
 
 "noPhotoTips" = "No Photos";
 
-"hudLoading" = "Loading";
-"hudProcessing" = "Processing";
+"hudLoading" = "waiting...";
 
 "exceededMaxSelectCount" = "Max count for selection: %ld";
-"longerThanMaxVideoDuration" = "Can't select videos longer than %lds";
-"shorterThanMinVideoDuration" = "Can't select videos shorter than %lds";
-"largerThanMaxVideoDataSize" = "Can't select videos larger than %@MB";
-"smallerThanMinVideoDataSize" = "Can't select videos smaller than %@MB";
+"longerThanMaxVideoDuration" = "Unable to select video with a duration longer than %lds";
+"shorterThanMaxVideoDuration" = "Unable to select video with a duration shorter than %lds";
 "exceededMaxVideoSelectCount" = "Max count for video selection: %ld";
 "lessThanMinVideoSelectCount" = "Min count for video selection: %ld";
 
-"noCameraAuthorityAlertMessage" = "Please allow %@ to access your device's camera in \"Settings\" > \"Privacy\" > \"Camera\"";
-"noPhotoLibraryAuthorityAlertMessage" = "Please allow %@ to access your album in \"Settings\" > \"Privacy\" > \"Photos\"";
-"noMicrophoneAuthorityAlertMessage" = "Unable to record audio. Go to \"Settings\" > \"%@\" and enable microphone access";
-"unableToAccessAllPhotos" = "%@ can only access selected photos. Allow permission for %@ to access \"All Photos\"";
-"noLibraryAuthTitleInThumbList" = "Unable to access photos in album";
-"noLibraryAuthDescInThumbList" = "%@ cannot access photos. Allow permission for %@ to access \"All Photos\"";
-"gotoSystemSettingInThumbList" = "Go to system settings";
-
+"noCameraAuthority" = "Please allow %@ to access your device's camera in \"Settings\" > \"Privacy\" > \"Camera\"";
+"noPhotoLibratyAuthority" = "Please allow %@ to access your album in \"Settings\" > \"Privacy\" > \"Photos\"";
+"noMicrophoneAuthority" = "Unable to record audio. Go to \"Settings\" > \"%@\" and enable microphone access";
 "cameraUnavailable" = "Camera is unavailable";
 "keepRecording" = "Keep Recording";
 "gotoSettings" = "Go to Settings";
@@ -57,7 +46,6 @@
 "customCameraTips" = "Tap to take photo and hold to record video";
 "customCameraTakePhotoTips" = "Tap to take photo";
 "customCameraRecordVideoTips" = "Hold to record video";
-"customCameraTapToRecordVideoTips" = "Tap to record video";
 "minRecordTimeTips" = "Record at least %lds";
 
 "cameraRoll" = "Recents";
@@ -76,4 +64,5 @@
 "myPhotoStream" = "My Photo Stream";
 
 "noTitleAlbumListPlaceholder" = "All Photos";
+"unableToAccessAllPhotos" = "Unable to access all photos in the album.\nAllow access to \"All Photos\" in \"Photos\".";
 "textStickerRemoveTips" = "Drag here to remove";

@@ -24,8 +24,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-import Foundation
-#if os(iOS) || os(tvOS) || os(visionOS)
+#if os(iOS) || os(tvOS)
 import UIKit
 
 /// Transition effect which will be used when an image downloaded and set by `UIImageView`
@@ -112,7 +111,5 @@ public enum ImageTransition {
 // Just a placeholder for compiling on macOS.
 public enum ImageTransition {
     case none
-    /// This is a placeholder on macOS now. It is for SwiftUI (KFImage) to identify the fade option only.
-    case fade(TimeInterval)
 }
 #endif

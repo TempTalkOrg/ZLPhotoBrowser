@@ -25,7 +25,6 @@
 //  THE SOFTWARE.
 
 import UIKit
-import Photos
 
 let ZLMaxImageWidth: CGFloat = 500
 
@@ -44,7 +43,7 @@ enum ZLLayout {
 }
 
 func markSelected(source: inout [ZLPhotoModel], selected: inout [ZLPhotoModel]) {
-    guard !selected.isEmpty else {
+    guard selected.count > 0 else {
         return
     }
     
@@ -104,11 +103,7 @@ func deviceSafeAreaInsets() -> UIEdgeInsets {
 }
 
 func deviceIsFringeScreen() -> Bool {
-    if UIApplication.shared.statusBarOrientation.isLandscape {
-        return deviceSafeAreaInsets().left > 0 || deviceSafeAreaInsets().right > 0
-    } else {
-        return deviceSafeAreaInsets().top > 20
-    }
+    return deviceSafeAreaInsets().top > 0
 }
 
 func isSmallScreen() -> Bool {
@@ -120,10 +115,8 @@ func isRTL() -> Bool {
 }
 
 func showAlertView(_ message: String, _ sender: UIViewController?) {
-    ZLMainAsync {
-        let action = ZLCustomAlertAction(title: localLanguageTextValue(.ok), style: .default, handler: nil)
-        showAlertController(title: nil, message: message, style: .alert, actions: [action], sender: sender)
-    }
+    let action = ZLCustomAlertAction(title: localLanguageTextValue(.ok), style: .default, handler: nil)
+    showAlertController(title: nil, message: message, style: .alert, actions: [action], sender: sender)
 }
 
 func showAlertController(title: String?, message: String?, style: ZLCustomAlertStyle, actions: [ZLCustomAlertAction], sender: UIViewController?) {
@@ -138,128 +131,45 @@ func showAlertController(title: String?, message: String?, style: ZLCustomAlertS
     actions
         .map { $0.toSystemAlertAction() }
         .forEach { alert.addAction($0) }
-    
-    let presentedVC = sender ?? UIApplication.shared.keyWindow?.rootViewController
-    
     if deviceIsiPad() {
-        alert.popoverPresentationController?.sourceView = presentedVC?.view
+        alert.popoverPresentationController?.sourceView = sender?.view
     }
-    
-    presentedVC?.zl.showAlertController(alert)
+    (sender ?? UIApplication.shared.keyWindow?.rootViewController)?.zl.showAlertController(alert)
 }
 
 func canAddModel(_ model: ZLPhotoModel, currentSelectCount: Int, sender: UIViewController?, showAlert: Bool = true) -> Bool {
-    let config = ZLPhotoConfiguration.default()
-    
-    guard config.canSelectAsset?(model.asset) ?? true else {
+    guard ZLPhotoConfiguration.default().canSelectAsset?(model.asset) ?? true else {
         return false
     }
     
-    if currentSelectCount >= config.maxSelectCount {
+    if currentSelectCount >= ZLPhotoConfiguration.default().maxSelectCount {
         if showAlert {
-            let message = String(format: localLanguageTextValue(.exceededMaxSelectCount), config.maxSelectCount)
+            let message = String(format: localLanguageTextValue(.exceededMaxSelectCount), ZLPhotoConfiguration.default().maxSelectCount)
             showAlertView(message, sender)
         }
         return false
     }
-    
-    if currentSelectCount > 0,
-       !config.allowMixSelect,
-       model.type == .video {
-        return false
-    }
-    
-    guard model.type == .video else {
-        return true
-    }
-    
-    if model.second > config.maxSelectVideoDuration {
-        if showAlert {
-            let message = String(format: localLanguageTextValue(.longerThanMaxVideoDuration), config.maxSelectVideoDuration)
-            showAlertView(message, sender)
-        }
-        return false
-    }
-    
-    if model.second < config.minSelectVideoDuration {
-        if showAlert {
-            let message = String(format: localLanguageTextValue(.shorterThanMinVideoDuration), config.minSelectVideoDuration)
-            showAlertView(message, sender)
-        }
-        return false
-    }
-    
-    guard config.minSelectVideoDataSize > 0 || config.maxSelectVideoDataSize != .greatestFiniteMagnitude,
-          let size = model.dataSize else {
-        return true
-    }
-    
-    if size > config.maxSelectVideoDataSize {
-        if showAlert {
-            let value = Int(round(config.maxSelectVideoDataSize / 1024))
-            let message = String(format: localLanguageTextValue(.largerThanMaxVideoDataSize), String(value))
-            showAlertView(message, sender)
-        }
-        return false
-    }
-    
-    if size < config.minSelectVideoDataSize {
-        if showAlert {
-            let value = Int(round(config.minSelectVideoDataSize / 1024))
-            let message = String(format: localLanguageTextValue(.smallerThanMinVideoDataSize), String(value))
-            showAlertView(message, sender)
-        }
-        return false
-    }
-    
-    return true
-}
-
-func downloadAssetIfNeed(model: ZLPhotoModel, sender: UIViewController?, completion: @escaping (() -> Void)) {
-    let config = ZLPhotoConfiguration.default()
-    guard model.type == .video,
-          model.asset.zl.isInCloud,
-          config.downloadVideoBeforeSelecting else {
-        completion()
-        return
-    }
-
-    var requestAssetID: PHImageRequestID?
-    let hud = ZLProgressHUD.show(timeout: ZLPhotoUIConfiguration.default().timeout)
-    hud.timeoutBlock = { [weak sender] in
-        showAlertView(localLanguageTextValue(.timeout), sender)
-        if let requestAssetID = requestAssetID {
-            PHImageManager.default().cancelImageRequest(requestAssetID)
+    if currentSelectCount > 0 {
+        if !ZLPhotoConfiguration.default().allowMixSelect, model.type == .video {
+            return false
         }
     }
-
-    requestAssetID = ZLPhotoManager.fetchVideo(for: model.asset, completion: { _, _, isDegraded in
-        hud.hide()
-        
-        if !isDegraded {
-            completion()
+    if model.type == .video {
+        if model.second > ZLPhotoConfiguration.default().maxSelectVideoDuration {
+            if showAlert {
+                let message = String(format: localLanguageTextValue(.longerThanMaxVideoDuration), ZLPhotoConfiguration.default().maxSelectVideoDuration)
+                showAlertView(message, sender)
+            }
+            return false
         }
-    })
-}
-
-/// Check if the video duration and size meet the requirements
-func videoIsMeetRequirements(model: ZLPhotoModel) -> Bool {
-    guard model.type == .video else {
-        return true
+        if model.second < ZLPhotoConfiguration.default().minSelectVideoDuration {
+            if showAlert {
+                let message = String(format: localLanguageTextValue(.shorterThanMaxVideoDuration), ZLPhotoConfiguration.default().minSelectVideoDuration)
+                showAlertView(message, sender)
+            }
+            return false
+        }
     }
-    
-    let config = ZLPhotoConfiguration.default()
-    
-    guard config.minSelectVideoDuration...config.maxSelectVideoDuration ~= model.second else {
-        return false
-    }
-    
-    if config.minSelectVideoDataSize > 0 || config.maxSelectVideoDataSize != .greatestFiniteMagnitude,
-       let dataSize = model.dataSize,
-       !(config.minSelectVideoDataSize...config.maxSelectVideoDataSize ~= dataSize) {
-        return false
-    }
-    
     return true
 }
 
@@ -283,8 +193,8 @@ func zl_debugPrint(_ message: Any...) {
 //    message.forEach { debugPrint($0) }
 }
 
-func zlLoggerInDebug(_ lastMessage: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line, funcName: String = #function) {
+func zlLoggerInDebug(_ lastMessage: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line) {
     #if DEBUG
-    debugPrint("file: \(file), line: \(line), func: \(funcName), message: \(lastMessage())")
+        print("\(file):\(line): \(lastMessage())")
     #endif
 }

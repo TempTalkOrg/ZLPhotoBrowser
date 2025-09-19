@@ -24,16 +24,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#if os(macOS)
-import AppKit
-#else
-import UIKit
-#endif
+import Foundation
 
-/// An `ImageModifier` can be used to change properties on an image between cache serialization and the actual use of
-/// the image. The `modify(_:)` method will be called after the image retrieved from its source and before it returned
-/// to the caller. This modified image is expected to be only used for rendering purpose, any changes applied by the
-/// `ImageModifier` will not be serialized or cached.
+/// An `ImageModifier` can be used to change properties on an image in between
+/// cache serialization and use of the image. The modified returned image will be
+/// only used for current rendering purpose, the serialization data will not contain
+/// the changes applied by the `ImageModifier`.
 public protocol ImageModifier {
     /// Modify an input `Image`.
     ///
@@ -67,7 +63,7 @@ public struct AnyImageModifier: ImageModifier {
     }
 }
 
-#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+#if os(iOS) || os(tvOS) || os(watchOS)
 import UIKit
 
 /// Modifier for setting the rendering mode of images.

@@ -27,8 +27,9 @@
 import UIKit
 import Photos
 
-public class ZLImageNavController: UINavigationController {
-    var isSelectedOriginal = false
+class ZLImageNavController: UINavigationController {
+    
+    var isSelectedOriginal: Bool = false
     
     var arrSelectedModels: [ZLPhotoModel] = []
     
@@ -40,7 +41,7 @@ public class ZLImageNavController: UINavigationController {
         zl_debugPrint("ZLImageNavController deinit")
     }
     
-    public override var preferredStatusBarStyle: UIStatusBarStyle {
+    override var preferredStatusBarStyle: UIStatusBarStyle {
         return ZLPhotoUIConfiguration.default().statusBarStyle
     }
     
@@ -61,9 +62,10 @@ public class ZLImageNavController: UINavigationController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public override func viewDidLoad() {
+    override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
     }
+    
 }

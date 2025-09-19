@@ -27,7 +27,7 @@
 import UIKit
 import Photos
 
-class ZLFetchImageOperation: Operation, @unchecked Sendable {
+class ZLFetchImageOperation: Operation {
     private let model: ZLPhotoModel
     
     private let isOriginal: Bool
@@ -71,7 +71,7 @@ class ZLFetchImageOperation: Operation, @unchecked Sendable {
         }
     }
     
-    private var requestImageID = PHInvalidImageRequestID
+    private var requestImageID: PHImageRequestID = PHInvalidImageRequestID
     
     override var isCancelled: Bool {
         return pri_isCancelled

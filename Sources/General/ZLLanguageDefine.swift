@@ -26,7 +26,7 @@
 
 import Foundation
 
-@objc public enum ZLLanguageType: Int, CaseIterable {
+@objc public enum ZLLanguageType: Int {
     case system
     case chineseSimplified
     case chineseTraditional
@@ -44,7 +44,6 @@ import Foundation
     case spanish
     case turkish
     case arabic
-    case dutch
     
     var key: String {
         var key = "en"
@@ -85,8 +84,6 @@ import Foundation
                 key = "tr"
             } else if key.hasPrefix("ar") {
                 key = "ar"
-            } else if key.hasPrefix("nl") {
-                key = "nl"
             } else {
                 key = "en"
             }
@@ -122,8 +119,6 @@ import Foundation
             key = "tr"
         case .arabic:
             key = "ar"
-        case .dutch:
-            key = "nl"
         }
         
         return key
@@ -152,20 +147,11 @@ public struct ZLLocalLanguageKey: Hashable {
     /// No Photo (无照片)
     public static let noPhotoTips = ZLLocalLanguageKey(rawValue: "noPhotoTips")
     
-    /// Loading (正在加载)
+    /// waiting... (正在处理...)
     public static let hudLoading = ZLLocalLanguageKey(rawValue: "hudLoading")
-    
-    /// Processing (正在处理)
-    public static let hudProcessing = ZLLocalLanguageKey(rawValue: "hudProcessing")
     
     /// Done (确定)
     public static let done = ZLLocalLanguageKey(rawValue: "done")
-    
-    /// Done (确定)
-    public static let cameraDone = ZLLocalLanguageKey(rawValue: "cameraDone")
-    
-    /// Done (确定)
-    public static let inputDone = ZLLocalLanguageKey(rawValue: "inputDone")
     
     /// OK (确定)
     public static let ok = ZLLocalLanguageKey(rawValue: "ok")
@@ -175,31 +161,15 @@ public struct ZLLocalLanguageKey: Hashable {
     
     /// Please Allow %@ to access your album in \"Settings\"->\"Privacy\"->\"Photos\"
     /// (请在iPhone的\"设置-隐私-照片\"选项中，允许%@访问你的照片)
-    public static let noPhotoLibraryAuthorityAlertMessage = ZLLocalLanguageKey(rawValue: "noPhotoLibraryAuthorityAlertMessage")
+    public static let noPhotoLibratyAuthority = ZLLocalLanguageKey(rawValue: "noPhotoLibratyAuthority")
     
     /// Please allow %@ to access your device's camera in \"Settings\"->\"Privacy\"->\"Camera\"
     /// (请在iPhone的\"设置-隐私-相机\"选项中，允许%@访问你的相机)
-    public static let noCameraAuthorityAlertMessage = ZLLocalLanguageKey(rawValue: "noCameraAuthorityAlertMessage")
+    public static let noCameraAuthority = ZLLocalLanguageKey(rawValue: "noCameraAuthority")
     
     /// Unable to record audio. Go to \"Settings\" > \"%@\" and enable microphone access.
     /// (无法录制声音，前往\"设置 > %@\"中打开麦克风权限)
-    public static let noMicrophoneAuthorityAlertMessage = ZLLocalLanguageKey(rawValue: "noMicrophoneAuthorityAlertMessage")
-    
-    /// %@ can only access selected photos. Allow permission for %@ to access \"All Photos\"
-    /// （你已设置%@只能访问相册部分照片，建议允许访问「所有照片」）
-    public static let unableToAccessAllPhotos = ZLLocalLanguageKey(rawValue: "unableToAccessAllPhotos")
-    
-    /// Unable to access photos in album
-    /// （无法访问相册中照片）
-    public static let noLibraryAuthTitleInThumbList = ZLLocalLanguageKey(rawValue: "noLibraryAuthTitleInThumbList")
-    
-    /// %@ cannot access photos. Allow permission for %@ to access \"All Photos\"
-    /// 你已关闭%@照片访问权限，建议允许访问「所有照片」
-    public static let noLibraryAuthDescInThumbList = ZLLocalLanguageKey(rawValue: "noLibraryAuthDescInThumbList")
-    
-    /// Go to system settings
-    /// 前往系统设置
-    public static let gotoSystemSettingInThumbList = ZLLocalLanguageKey(rawValue: "gotoSystemSettingInThumbList")
+    public static let noMicrophoneAuthority = ZLLocalLanguageKey(rawValue: "noMicrophoneAuthority")
     
     /// Camera is unavailable (相机不可用)
     public static let cameraUnavailable = ZLLocalLanguageKey(rawValue: "cameraUnavailable")
@@ -215,9 +185,6 @@ public struct ZLLocalLanguageKey: Hashable {
     
     /// Full Image (原图)
     public static let originalPhoto = ZLLocalLanguageKey(rawValue: "originalPhoto")
-    
-    /// Total (共)
-    public static let originalTotalSize = ZLLocalLanguageKey(rawValue: "originalTotalSize")
     
     /// Back (返回)
     public static let back = ZLLocalLanguageKey(rawValue: "back")
@@ -261,21 +228,13 @@ public struct ZLLocalLanguageKey: Hashable {
     /// Min count for video selection: %ld (最少选择%ld个视频)
     public static let lessThanMinVideoSelectCount = ZLLocalLanguageKey(rawValue: "lessThanMinVideoSelectCount")
     
-    /// Can't select videos longer than %lds
+    /// Unable to select video with a duration longer than %lds
     /// (不能选择超过%ld秒的视频)
     public static let longerThanMaxVideoDuration = ZLLocalLanguageKey(rawValue: "longerThanMaxVideoDuration")
     
-    /// Can't select videos shorter than %lds
+    /// Unable to select video with a duration shorter than %lds
     /// (不能选择低于%ld秒的视频)
-    public static let shorterThanMinVideoDuration = ZLLocalLanguageKey(rawValue: "shorterThanMinVideoDuration")
-    
-    /// Can't select videos larger than %@MB
-    /// (不能选择大于%@MB的视频)
-    public static let largerThanMaxVideoDataSize = ZLLocalLanguageKey(rawValue: "largerThanMaxVideoDataSize")
-    
-    /// Can't select videos smaller than %@MB
-    /// (不能选择小于%@MB的视频)
-    public static let smallerThanMinVideoDataSize = ZLLocalLanguageKey(rawValue: "smallerThanMinVideoDataSize")
+    public static let shorterThanMaxVideoDuration = ZLLocalLanguageKey(rawValue: "shorterThanMaxVideoDuration")
     
     /// Unable to sync from iCloud (iCloud无法同步)
     public static let iCloudVideoLoadFaild = ZLLocalLanguageKey(rawValue: "iCloudVideoLoadFaild")
@@ -289,11 +248,8 @@ public struct ZLLocalLanguageKey: Hashable {
     /// Tap to take photo (轻触拍照)
     public static let customCameraTakePhotoTips = ZLLocalLanguageKey(rawValue: "customCameraTakePhotoTips")
     
-    /// Hold to record video (按住摄像)
+    /// hold to record video (按住摄像)
     public static let customCameraRecordVideoTips = ZLLocalLanguageKey(rawValue: "customCameraRecordVideoTips")
-    
-    /// Tap to record video (轻触摄像)
-    public static let customCameraTapToRecordVideoTips = ZLLocalLanguageKey(rawValue: "customCameraTapToRecordVideoTips")
     
     /// Record at least %lds (至少录制%ld秒)
     public static let minRecordTimeTips = ZLLocalLanguageKey(rawValue: "minRecordTimeTips")
@@ -342,6 +298,9 @@ public struct ZLLocalLanguageKey: Hashable {
     
     /// All Photos (所有照片)
     public static let noTitleAlbumListPlaceholder = ZLLocalLanguageKey(rawValue: "noTitleAlbumListPlaceholder")
+    
+    /// Unable to access all photos, go to settings (无法访问所有照片，前往设置)
+    public static let unableToAccessAllPhotos = ZLLocalLanguageKey(rawValue: "unableToAccessAllPhotos")
     
     /// Drag here to remove (拖到此处删除)
     public static let textStickerRemoveTips = ZLLocalLanguageKey(rawValue: "textStickerRemoveTips")

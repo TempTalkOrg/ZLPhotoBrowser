@@ -4,12 +4,9 @@
 "cancel" = "Abbrechen";
 
 "originalPhoto" = "Vollbild";
-"originalTotalSize" = "Gesamt";
 "done" = "Erledigt";
 "ok" = "in Ordnung";
 "editFinish" = "Fertig";
-"cameraDone" = "Erledigt";
-"inputDone" = "Erledigt";
 
 "back" = "Zurück";
 "edit" = "Bearbeiten";
@@ -23,25 +20,17 @@
 
 "noPhotoTips" = "Keine Fotos";
 
-"hudLoading" = "Wird geladen";
-"hudProcessing" = "Wird verarbeitet";
+"hudLoading" = "Bitte warten...";
 
 "exceededMaxSelectCount" = "Maximale Auswahlanzahl: %ld";
-"longerThanMaxVideoDuration" = "Videos, die länger als %lds sind, können nicht ausgewählt werden";
-"shorterThanMinVideoDuration" = "Videos kürzer als %lds können nicht ausgewählt werden";
-"largerThanMaxVideoDataSize" = "Videos größer als %@MB können nicht ausgewählt werden";
-"smallerThanMinVideoDataSize" = "Videos kleiner als %@MB können nicht ausgewählt werden";
+"longerThanMaxVideoDuration" = "Video mit einer Dauer von mehr als %lds kann nicht ausgewählt werden";
+"shorterThanMaxVideoDuration" = "Video mit einer Dauer von weniger als %lds kann nicht ausgewählt werden";
 "exceededMaxVideoSelectCount" = "Video max Auswahlanzahl: %ld";
 "lessThanMinVideoSelectCount" = "Video min Auswahlanzahl: %ld";
 
-"noCameraAuthorityAlertMessage" = "Bitte erlauben Sie %@, auf die Kamera Ihres Geräts unter \"Einstellungen\" > \"Datenschutz\" > \"Kamera\" zuzugreifen";
-"noPhotoLibraryAuthorityAlertMessage" = "Bitte erlauben Sie %@, auf Ihr Album unter \"Einstellungen\" > \"Datenschutz\" > \"Fotos\" zuzugreifen";
-"noMicrophoneAuthorityAlertMessage" = "Audio kann nicht aufgenommen werden. Gehen Sie zu \"Einstellungen\" > \"%@\" und aktivieren Sie den Mikrofonzugriff";
-"unableToAccessAllPhotos" = "%@ kann nur auf ausgewählte Fotos zugreifen. Gestatten Sie %@ den Zugriff auf „Alle Fotos“.";
-"noLibraryAuthTitleInThumbList" = "Zugriff auf Fotos im Album nicht möglich";
-"noLibraryAuthDescInThumbList" = "%@ kann auf keine Fotos zugreifen. Gestatten Sie %@ den Zugriff auf „Alle Fotos“";
-"gotoSystemSettingInThumbList" = "Zu Systemeinstellungen wechseln";
-
+"noCameraAuthority" = "Bitte erlauben Sie %@, auf die Kamera Ihres Geräts unter \"Einstellungen\" > \"Datenschutz\" > \"Kamera\" zuzugreifen";
+"noPhotoLibratyAuthority" = "Bitte erlauben Sie %@, auf Ihr Album unter \"Einstellungen\" > \"Datenschutz\" > \"Fotos\" zuzugreifen";
+"noMicrophoneAuthority" = "Audio kann nicht aufgenommen werden. Gehen Sie zu \"Einstellungen\" > \"%@\" und aktivieren Sie den Mikrofonzugriff";
 "cameraUnavailable" = "Kamera ist nicht verfügbar";
 "keepRecording" = "Aufnahme behalten";
 "gotoSettings" = "Zu Einstellungen wechseln";
@@ -57,7 +46,6 @@
 "customCameraTips" = "Tippen, um Fotos aufzunehmen und halten, um ein Video aufzunehmen";
 "customCameraTakePhotoTips" = "Tippen, um ein Foto aufzunehmen";
 "customCameraRecordVideoTips" = "Halten Sie gedrückt, um ein Video aufzunehmen";
-"customCameraTapToRecordVideoTips" = "Tippen, um Video aufzunehmen";
 "minRecordTimeTips" = "Nehmen Sie mindestens %lds auf";
 
 "cameraRoll" = "Letzte";
@@ -76,4 +64,5 @@
 "myPhotoStream" = "Mein Fotostream";
 
 "noTitleAlbumListPlaceholder" = "Alle Fotos";
+"unableToAccessAllPhotos" = "Zugriff auf alle Fotos im Album nicht möglich.\nZugriff auf \"Alle Fotos\" unter \"Fotos\" zulassen.";
 "textStickerRemoveTips" = "Zum Entfernen hierher ziehen";

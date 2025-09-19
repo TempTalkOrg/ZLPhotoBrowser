@@ -26,10 +26,8 @@
 
 import UIKit
 
-class ZLImageStickerView: ZLBaseStickerView {
+class ZLImageStickerView: ZLBaseStickerView<ZLImageStickerState> {
     private let image: UIImage
-    
-    private static let edgeInset: CGFloat = 20
     
     private lazy var imageView: UIImageView = {
         let view = UIImageView(image: image)
@@ -41,7 +39,6 @@ class ZLImageStickerView: ZLBaseStickerView {
     // Convert all states to model.
     override var state: ZLImageStickerState {
         return ZLImageStickerState(
-            id: id,
             image: image,
             originScale: originScale,
             originAngle: originAngle,
@@ -56,9 +53,8 @@ class ZLImageStickerView: ZLBaseStickerView {
         zl_debugPrint("ZLImageStickerView deinit")
     }
     
-    convenience init(state: ZLImageStickerState) {
+    convenience init(from state: ZLImageStickerState) {
         self.init(
-            id: state.id,
             image: state.image,
             originScale: state.originScale,
             originAngle: state.originAngle,
@@ -71,7 +67,6 @@ class ZLImageStickerView: ZLBaseStickerView {
     }
     
     init(
-        id: String = UUID().uuidString,
         image: UIImage,
         originScale: CGFloat,
         originAngle: CGFloat,
@@ -82,18 +77,9 @@ class ZLImageStickerView: ZLBaseStickerView {
         showBorder: Bool = true
     ) {
         self.image = image
-        super.init(
-            id: id,
-            originScale: originScale,
-            originAngle: originAngle,
-            originFrame: originFrame,
-            gesScale: gesScale,
-            gesRotation: gesRotation,
-            totalTranslationPoint: totalTranslationPoint,
-            showBorder: showBorder
-        )
+        super.init(originScale: originScale, originAngle: originAngle, originFrame: originFrame, gesScale: gesScale, gesRotation: gesRotation, totalTranslationPoint: totalTranslationPoint, showBorder: showBorder)
         
-        borderView.addSubview(imageView)
+        addSubview(imageView)
     }
     
     @available(*, unavailable)
@@ -102,7 +88,7 @@ class ZLImageStickerView: ZLBaseStickerView {
     }
     
     override func setupUIFrameWhenFirstLayout() {
-        imageView.frame = bounds.insetBy(dx: Self.edgeInset, dy: Self.edgeInset)
+        imageView.frame = bounds.insetBy(dx: ZLStickerLayout.edgeInset, dy: ZLStickerLayout.edgeInset)
     }
     
     class func calculateSize(image: UIImage, width: CGFloat) -> CGSize {
@@ -119,8 +105,37 @@ class ZLImageStickerView: ZLBaseStickerView {
             let w = h * whRatio
             size = CGSize(width: w, height: h)
         }
-        size.width += Self.edgeInset * 2
-        size.height += Self.edgeInset * 2
+        size.width += ZLStickerLayout.edgeInset * 2
+        size.height += ZLStickerLayout.edgeInset * 2
         return size
+    }
+}
+
+public class ZLImageStickerState: NSObject {
+    let image: UIImage
+    let originScale: CGFloat
+    let originAngle: CGFloat
+    let originFrame: CGRect
+    let gesScale: CGFloat
+    let gesRotation: CGFloat
+    let totalTranslationPoint: CGPoint
+    
+    init(
+        image: UIImage,
+        originScale: CGFloat,
+        originAngle: CGFloat,
+        originFrame: CGRect,
+        gesScale: CGFloat,
+        gesRotation: CGFloat,
+        totalTranslationPoint: CGPoint
+    ) {
+        self.image = image
+        self.originScale = originScale
+        self.originAngle = originAngle
+        self.originFrame = originFrame
+        self.gesScale = gesScale
+        self.gesRotation = gesRotation
+        self.totalTranslationPoint = totalTranslationPoint
+        super.init()
     }
 }

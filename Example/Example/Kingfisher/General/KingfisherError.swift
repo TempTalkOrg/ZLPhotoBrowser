@@ -25,11 +25,6 @@
 //  THE SOFTWARE.
 
 import Foundation
-#if os(macOS)
-import AppKit
-#else
-import UIKit
-#endif
 
 extension Never {}
 
@@ -93,10 +88,6 @@ public enum KingfisherError: Error {
         /// The task is done but no URL response found. Code 2005.
         /// - task: The failed task.
         case noURLResponse(task: SessionDataTask)
-
-        /// The task is cancelled by `ImageDownloaderDelegate` due to the `.cancel` response disposition is
-        /// specified by the delegate method. Code 2006.
-        case cancelledByDelegate(response: URLResponse)
     }
     
     /// Represents the error reason during Kingfisher caching system.
@@ -166,14 +157,6 @@ public enum KingfisherError: Error {
         /// - error: The underlying error originally thrown by Foundation when setting the `attributes` to the disk
         ///          file at `filePath`.
         case cannotSetCacheFileAttribute(filePath: String, attributes: [FileAttributeKey : Any], error: Error)
-
-        /// The disk storage of cache is not ready. Code 3011.
-        ///
-        /// This is usually due to extremely lack of space on disk storage, and
-        /// Kingfisher failed even when creating the cache folder. The disk storage will be in unusable state. Normally,
-        /// ask user to free some spaces and restart the app to make the disk storage work again.
-        /// - cacheURL: The intended URL which should be the storage folder.
-        case diskStorageIsNotReady(cacheURL: URL)
     }
     
     
@@ -273,18 +256,6 @@ public enum KingfisherError: Error {
         }
         return false
     }
-
-    var isLowDataModeConstrained: Bool {
-        if #available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *),
-           case .responseError(reason: .URLSessionError(let sessionError)) = self,
-           let urlError = sessionError as? URLError,
-           urlError.networkUnavailableReason == .constrained
-        {
-            return true
-        }
-        return false
-    }
-
 }
 
 // MARK: - LocalizedError Conforming
@@ -354,10 +325,7 @@ extension KingfisherError.ResponseErrorReason {
         case .dataModifyingFailed(let task):
             return "The data modifying delegate returned `nil` for the downloaded data. Task: \(task)."
         case .noURLResponse(let task):
-            return "No URL response received. Task: \(task)."
-        case .cancelledByDelegate(let response):
-            return "The downloading task is cancelled by the downloader delegate. Response: \(response)."
-
+            return "No URL response received. Task: \(task),"
         }
     }
     
@@ -368,7 +336,6 @@ extension KingfisherError.ResponseErrorReason {
         case .URLSessionError: return 2003
         case .dataModifyingFailed: return 2004
         case .noURLResponse: return 2005
-        case .cancelledByDelegate: return 2006
         }
     }
 }
@@ -403,9 +370,6 @@ extension KingfisherError.CacheErrorReason {
         case .cannotSetCacheFileAttribute(let filePath, let attributes, let error):
             return "Cannot set file attribute for the cache file at path: \(filePath), attributes: \(attributes)." +
                    "Underlying foundation error: \(error)."
-        case .diskStorageIsNotReady(let cacheURL):
-            return "The disk storage is not ready to use yet at URL: '\(cacheURL)'. " +
-                "This is usually caused by extremely lack of disk space. Ask users to free up some space and restart the app."
         }
     }
     
@@ -421,7 +385,6 @@ extension KingfisherError.CacheErrorReason {
         case .cannotSerializeImage: return 3008
         case .cannotCreateCacheFile: return 3009
         case .cannotSetCacheFileAttribute: return 3010
-        case .diskStorageIsNotReady: return 3011
         }
     }
 }

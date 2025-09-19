@@ -27,10 +27,6 @@ class ViewController: UIViewController {
         
         setupUI()
         
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-//            FLEXManager.shared.showExplorer()
-//        }
-        
         ZLPhotoUIConfiguration.default()
             .customAlertClass(CustomAlertController.self)
     }
@@ -59,7 +55,7 @@ class ViewController: UIViewController {
                 make.top.equalTo(topLayoutGuide.snp.bottom).offset(20)
             }
             
-            make.left.equalTo(view.snp.leftMargin).offset(30)
+            make.left.equalToSuperview().offset(30)
         }
         
         let configBtn_cn = createBtn("相册配置 (中文)", #selector(cn_configureClick))
@@ -167,8 +163,7 @@ class ViewController: UIViewController {
             .minimumInteritemSpacing(minItemSpacing)
             .minimumLineSpacing(minLineSpacing)
             .columnCountBlock { Int(ceil($0 / (428.0 / 4))) }
-            .showScrollToBottomBtn(true)
-            
+        
         if ZLPhotoUIConfiguration.default().languageType == .arabic {
             UIView.appearance().semanticContentAttribute = .forceRightToLeft
         } else {
@@ -179,9 +174,10 @@ class ViewController: UIViewController {
         ZLPhotoConfiguration.default()
             .editImageConfiguration
             .imageStickerContainerView(ImageStickerContainerView())
+            .canRedo(true)
 //            .tools([.draw, .clip, .mosaic, .filter])
 //            .adjustTools([.brightness, .contrast, .saturation])
-            .clipRatios(ZLImageClipRatio.all)
+//            .clipRatios([.custom, .circle, .wh1x1, .wh3x4, .wh16x9, ZLImageClipRatio(title: "2 : 1", whRatio: 2 / 1)])
 //            .imageStickerContainerView(ImageStickerContainerView())
 //            .filters([.normal, .process, ZLFilter(name: "custom", applier: ZLCustomFilter.hazeRemovalFilter)])
         
@@ -193,11 +189,12 @@ class ViewController: UIViewController {
              .allowSwitchCamera(false)
              .showFlashSwitch(true)
           */
+        
         ZLPhotoConfiguration.default()
             // You can first determine whether the asset is allowed to be selected.
-            .canSelectAsset { _ in true }
-            .didSelectAsset { _ in }
-            .didDeselectAsset { _ in }
+            .canSelectAsset { _ in
+                true
+            }
             .noAuthorityCallback { type in
                 switch type {
                 case .library:
@@ -208,47 +205,39 @@ class ViewController: UIViewController {
                     debugPrint("No microphone authority")
                 }
             }
-            .gifPlayBlock { imageView, data, asset, _ in
-                var animatedImageView: AnimatedImageView?
+            .gifPlayBlock { imageView, data, _ in
+                let animatedImage = FLAnimatedImage(gifData: data)
+                
+                var animatedImageView: FLAnimatedImageView?
                 for subView in imageView.subviews {
-                    if let subView = subView as? AnimatedImageView {
+                    if let subView = subView as? FLAnimatedImageView {
                         animatedImageView = subView
                         break
                     }
                 }
-
+                
                 if animatedImageView == nil {
-                    animatedImageView = AnimatedImageView()
+                    animatedImageView = FLAnimatedImageView()
                     imageView.addSubview(animatedImageView!)
                 }
                 
                 animatedImageView?.frame = imageView.bounds
-                
-                let provider = RawImageDataProvider(data: data, cacheKey: asset.localIdentifier)
-                animatedImageView?.kf.setImage(
-                    with: .provider(provider),
-                    placeholder: imageView.image,
-                    options: [.cacheOriginalImage]
-                ) { result in
-                    switch result {
-                    case .success(_):
-                        print("✅ GIF 加载并播放成功")
-                    case .failure(_):
-                        print("❌ GIF 加载失败")
-                    }
-                }
+                animatedImageView?.animatedImage = animatedImage
+                animatedImageView?.runLoopMode = .default
             }
-            .pauseGIFBlock { $0.subviews.forEach { ($0 as? AnimatedImageView)?.stopAnimating() } }
-            .resumeGIFBlock { $0.subviews.forEach { ($0 as? AnimatedImageView)?.startAnimating() } }
+            .pauseGIFBlock { $0.subviews.forEach { ($0 as? FLAnimatedImageView)?.stopAnimating() } }
+            .resumeGIFBlock { $0.subviews.forEach { ($0 as? FLAnimatedImageView)?.startAnimating() } }
 //            .operateBeforeDoneAction { currVC, block in
 //                // Do something before select photo result callback, and then call block to continue done action.
 //                block()
 //            }
         
         /// Using this init method, you can continue editing the selected photo
-        let picker = ZLPhotoPicker(results: takeSelectedAssetsSwitch.isOn ? selectedResults : nil)
+        let ac = ZLPhotoPreviewSheet(results: takeSelectedAssetsSwitch.isOn ? selectedResults : nil)
         
-        picker.selectImageBlock = { [weak self] results, isOriginal in
+//        let ac = ZLPhotoPreviewSheet(selectedAssets: takeSelectedAssetsSwitch.isOn ? selectedAssets : nil)
+        
+        ac.selectImageBlock = { [weak self] results, isOriginal in
             guard let `self` = self else { return }
             self.selectedResults = results
             self.selectedImages = results.map { $0.image }
@@ -261,19 +250,19 @@ class ViewController: UIViewController {
             debugPrint("isOriginal: \(isOriginal)")
             
 //            guard !self.selectedAssets.isEmpty else { return }
-//            self.saveAsset(self.selectedAssets[0])
+//            self?.saveAsset(self.selectedAssets[0])
         }
-        picker.cancelBlock = {
+        ac.cancelBlock = {
             debugPrint("cancel select")
         }
-        picker.selectImageRequestErrorBlock = { errorAssets, errorIndexs in
+        ac.selectImageRequestErrorBlock = { errorAssets, errorIndexs in
             debugPrint("fetch error assets: \(errorAssets), error indexs: \(errorIndexs)")
         }
         
         if preview {
-            picker.showPreview(animate: true, sender: self)
+            ac.showPreview(animate: true, sender: self)
         } else {
-            picker.showPhotoLibrary(sender: self)
+            ac.showPhotoLibrary(sender: self)
         }
     }
     
@@ -285,16 +274,10 @@ class ViewController: UIViewController {
             filePath = NSTemporaryDirectory().appendingFormat("%@.%@", UUID().uuidString, "jpg")
         }
         
-        debugPrint("---- start saving \(filePath)")
+        debugPrint("---- \(filePath)")
         let url = URL(fileURLWithPath: filePath)
-        ZLPhotoManager.saveAsset(asset, toFile: url) { error in
+        ZLPhotoManager.saveAsset(asset, toFile: url) { _ in
             do {
-                if let error = error {
-                     debugPrint("save error: \(error)")
-                    return
-                }
-                
-                debugPrint("save suc: \(url)")
                 if asset.mediaType == .video {
                     _ = AVURLAsset(url: url)
                 } else {
@@ -309,7 +292,7 @@ class ViewController: UIViewController {
         var datas: [Any] = []
         // network image
         datas.append(URL(string: "https://cdn.pixabay.com/photo/2020/10/14/18/35/sign-post-5655110_1280.png")!)
-        datas.append(URL(string: "https://images.pexels.com/photos/16144420/pexels-photo-16144420/free-photo-of-two-cats-sitting-under-a-tree-and-looking-up.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2")!)
+        datas.append(URL(string: "https://pic.netbian.com/uploads/allimg/190518/174718-1558172838db13.jpg")!)
         datas.append(URL(string: "http://5b0988e595225.cdn.sohucs.com/images/20190420/1d1070881fd540db817b2a3bdd967f37.gif")!)
         datas.append(URL(string: "https://cdn.pixabay.com/photo/2019/11/08/11/56/cat-4611189_1280.jpg")!)
         
@@ -348,13 +331,6 @@ class ViewController: UIViewController {
             }
         }
         
-        vc.delegate = self
-        
-        vc.netVideoCoverImageBlock = { url in
-            debugPrint("Customize the cover image for the network video here. Index: \(String(describing: datas.firstIndex(where: { ($0 as? URL) == url })))")
-            return nil
-        }
-        
         vc.doneBlock = { datas in
             debugPrint(datas)
         }
@@ -368,10 +344,6 @@ class ViewController: UIViewController {
     }
     
     @objc func showCamera() {
-        // To enable tap-to-record you can also use tapToRecordVideo flag in camera config, for example:
-        // ZLPhotoConfiguration.default().cameraConfiguration = ZLPhotoConfiguration.default().cameraConfiguration
-        //  .tapToRecordVideo(true)
-        
         let camera = ZLCustomCamera()
         camera.takeDoneBlock = { [weak self] image, videoUrl in
             self?.save(image: image, videoUrl: videoUrl)
@@ -380,10 +352,11 @@ class ViewController: UIViewController {
     }
     
     func save(image: UIImage?, videoUrl: URL?) {
+        let hud = ZLProgressHUD(style: ZLPhotoUIConfiguration.default().hudStyle)
         if let image = image {
-            let hud = ZLProgressHUD.show(toast: .processing)
-            ZLPhotoManager.saveImageToAlbum(image: image) { [weak self] error, asset in
-                if error == nil, let asset {
+            hud.show()
+            ZLPhotoManager.saveImageToAlbum(image: image) { [weak self] suc, asset in
+                if suc, let asset = asset {
                     let resultModel = ZLResultModel(asset: asset, image: image, isEdited: false, index: 0)
                     self?.selectedResults = [resultModel]
                     self?.selectedImages = [image]
@@ -395,9 +368,9 @@ class ViewController: UIViewController {
                 hud.hide()
             }
         } else if let videoUrl = videoUrl {
-            let hud = ZLProgressHUD.show(toast: .processing)
-            ZLPhotoManager.saveVideoToAlbum(url: videoUrl) { [weak self] error, asset in
-                if error == nil, let asset {
+            hud.show()
+            ZLPhotoManager.saveVideoToAlbum(url: videoUrl) { [weak self] suc, asset in
+                if suc, let asset = asset {
                     self?.fetchImage(for: asset)
                 } else {
                     debugPrint("保存视频到相册失败")
@@ -466,8 +439,9 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegateFl
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let picker = ZLPhotoPicker()
-        picker.selectImageBlock = { [weak self] results, isOriginal in
+        let ac = ZLPhotoPreviewSheet()
+        
+        ac.selectImageBlock = { [weak self] results, isOriginal in
             guard let `self` = self else { return }
             self.selectedResults = results
             self.selectedImages = results.map { $0.image }
@@ -480,20 +454,6 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegateFl
             debugPrint("isOriginal: \(isOriginal)")
         }
         
-        picker.previewAssets(sender: self, assets: selectedAssets, index: indexPath.row, isOriginal: isOriginal, showBottomViewAndSelectBtn: true)
-    }
-}
-
-extension ViewController: ZLImagePreviewControllerDelegate {
-    func imagePreviewController(_ controller: ZLImagePreviewController, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-//        debugPrint("---- willDisplay: \(cell) indexPath: \(indexPath)")
-    }
-    
-    func imagePreviewController(_ controller: ZLImagePreviewController, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-//        debugPrint("---- didEndDisplaying: \(cell) indexPath: \(indexPath)")
-    }
-    
-    func imagePreviewController(_ controller: ZLImagePreviewController, didScroll collectionView: UICollectionView) {
-//        debugPrint("---- didScroll: \(collectionView)")
+        ac.previewAssets(sender: self, assets: selectedAssets, index: indexPath.row, isOriginal: isOriginal, showBottomViewAndSelectBtn: true)
     }
 }
