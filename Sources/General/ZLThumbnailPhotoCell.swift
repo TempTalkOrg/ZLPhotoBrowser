@@ -272,6 +272,8 @@ class ZLThumbnailPhotoCell: UICollectionViewCell {
     
     private func fetchBigImage() {
         cancelFetchBigImage()
+        // Video data is loaded by the video flow; do not prefetch its full-size image.
+        guard model.type != .video else { return }
         
         bigImageReqeustID = ZLPhotoManager.fetchOriginalImageData(for: model.asset, progress: { [weak self] progress, _, _, _ in
             if self?.model.isSelected == true {
