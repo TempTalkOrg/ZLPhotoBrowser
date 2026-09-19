@@ -113,7 +113,32 @@ class ZLFetchImageOperation: Operation {
             }
             return
         }
-        
+
+        if model.type == .video {
+            // Video selection only needs a local cover, including in original mode.
+            let option = PHImageRequestOptions()
+            option.isNetworkAccessAllowed = false
+            option.deliveryMode = .fastFormat
+            option.resizeMode = .fast
+            requestImageID = PHImageManager.default().requestImage(
+                for: model.asset,
+                targetSize: CGSize(width: 320, height: 320),
+                contentMode: .aspectFit,
+                options: option
+            ) { [weak self] image, info in
+                ZLMainAsync {
+                    guard let self = self, !self.isCancelled, !self.isFinished else {
+                        return
+                    }
+                    // fastFormat returns once; a degraded image is a final result.
+                    let cancelled = info?[PHImageCancelledKey] as? Bool ?? false
+                    self.completion(cancelled ? nil : image, nil)
+                    self.fetchFinish()
+                }
+            }
+            return
+        }
+
         if ZLPhotoConfiguration.default().allowSelectGif, model.type == .gif {
             requestImageID = ZLPhotoManager.fetchOriginalImageData(for: model.asset) { [weak self] data, _, isDegraded in
                 if !isDegraded {
