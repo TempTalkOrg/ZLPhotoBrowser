@@ -31,6 +31,8 @@ class ZLFetchImageOperation: Operation {
     private let model: ZLPhotoModel
     
     private let isOriginal: Bool
+
+    private let fetchVideoCover: Bool
     
     private let progress: ((CGFloat, Error?, UnsafeMutablePointer<ObjCBool>, [AnyHashable: Any]?) -> Void)?
     
@@ -80,11 +82,13 @@ class ZLFetchImageOperation: Operation {
     init(
         model: ZLPhotoModel,
         isOriginal: Bool,
+        fetchVideoCover: Bool = true,
         progress: ((CGFloat, Error?, UnsafeMutablePointer<ObjCBool>, [AnyHashable: Any]?) -> Void)? = nil,
         completion: @escaping ((UIImage?, PHAsset?) -> Void)
     ) {
         self.model = model
         self.isOriginal = isOriginal
+        self.fetchVideoCover = fetchVideoCover
         self.progress = progress
         self.completion = completion
         super.init()
@@ -115,6 +119,15 @@ class ZLFetchImageOperation: Operation {
         }
 
         if model.type == .video {
+            if !fetchVideoCover {
+                ZLMainAsync {
+                    guard !self.isCancelled, !self.isFinished else { return }
+                    self.completion(nil, self.model.asset)
+                    self.fetchFinish()
+                }
+                return
+            }
+
             // Video selection only needs a local cover, including in original mode.
             let option = PHImageRequestOptions()
             option.isNetworkAccessAllowed = false

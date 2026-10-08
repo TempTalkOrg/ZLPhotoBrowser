@@ -131,6 +131,12 @@ public class ZLPhotoPreviewSheet: UIView {
     ///  - params1: result models
     ///  - params2: is full image
     @objc public var selectImageBlock: (([ZLResultModel], Bool) -> Void)?
+
+    /// Alternative to selectImageBlock for callers that only consume PHAssets.
+    /// Videos skip cover requests; images retain the existing fetch/edit workflow.
+    /// Takes precedence over selectImageBlock when set. Returns successful assets,
+    /// original quality, failed assets, and their original selection indices together.
+    @objc public var selectAssetsBlock: (([PHAsset], Bool, [PHAsset], [Int]) -> Void)?
     
     /// Callback for photos that failed to parse
     /// block params
@@ -560,7 +566,11 @@ public class ZLPhotoPreviewSheet: UIView {
     
     private func requestSelectPhoto(viewController: UIViewController? = nil) {
         guard !arrSelectedModels.isEmpty else {
-            selectImageBlock?([], isSelectOriginal)
+            if let selectAssetsBlock = selectAssetsBlock {
+                selectAssetsBlock([], isSelectOriginal, [], [])
+            } else {
+                selectImageBlock?([], isSelectOriginal)
+            }
             hide()
             viewController?.dismiss(animated: true, completion: nil)
             return
@@ -591,11 +601,15 @@ public class ZLPhotoPreviewSheet: UIView {
         
         let isOriginal = config.allowSelectOriginal ? isSelectOriginal : config.alwaysRequestOriginal
         
-        let callback = { [weak self] (sucModels: [ZLResultModel], errorAssets: [PHAsset], errorIndexs: [Int]) in
+        let callback = { [weak self] (sucModels: [ZLResultModel], sucAssets: [PHAsset], errorAssets: [PHAsset], errorIndexs: [Int]) in
             hud.hide()
             
             func call() {
-                self?.selectImageBlock?(sucModels, isOriginal)
+                if let selectAssetsBlock = self?.selectAssetsBlock {
+                    selectAssetsBlock(sucAssets, isOriginal, errorAssets, errorIndexs)
+                } else {
+                    self?.selectImageBlock?(sucModels, isOriginal)
+                }
                 if !errorAssets.isEmpty {
                     self?.selectImageRequestErrorBlock?(errorAssets, errorIndexs)
                 }
@@ -619,19 +633,23 @@ public class ZLPhotoPreviewSheet: UIView {
         }
         
         var results: [ZLResultModel?] = Array(repeating: nil, count: arrSelectedModels.count)
+        var assets: [PHAsset?] = Array(repeating: nil, count: arrSelectedModels.count)
         var errorAssets: [PHAsset] = []
         var errorIndexs: [Int] = []
         
         var sucCount = 0
         let totalCount = arrSelectedModels.count
+        let fetchVideoCover = selectAssetsBlock == nil
         
         for (i, m) in arrSelectedModels.enumerated() {
-            let operation = ZLFetchImageOperation(model: m, isOriginal: isOriginal) { image, asset in
+            let operation = ZLFetchImageOperation(model: m, isOriginal: isOriginal, fetchVideoCover: fetchVideoCover) { image, asset in
                 guard !timeout else { return }
                 
                 sucCount += 1
                 
-                if let image = image {
+                if !fetchVideoCover, m.type == .video, let asset = asset {
+                    assets[i] = asset
+                } else if let image = image {
                     let isEdited = m.editImage != nil && !config.saveNewImageAfterEdit
                     let model = ZLResultModel(
                         asset: asset ?? m.asset,
@@ -641,6 +659,7 @@ public class ZLPhotoPreviewSheet: UIView {
                         index: i
                     )
                     results[i] = model
+                    assets[i] = model.asset
                     zl_debugPrint("ZLPhotoBrowser: suc request \(i)")
                 } else {
                     errorAssets.append(m.asset)
@@ -652,6 +671,7 @@ public class ZLPhotoPreviewSheet: UIView {
                 
                 callback(
                     results.compactMap { $0 },
+                    assets.compactMap { $0 },
                     errorAssets,
                     errorIndexs
                 )
